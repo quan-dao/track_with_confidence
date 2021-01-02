@@ -203,7 +203,7 @@ def kitti_obj_to_bbox2d(obj):
 
 
 def kitti_obj_to_bbox3d(obj):
-    return Bbox3D(obj.x, obj.y, obj.z, obj.l, obj.w, obj.h, obj.rot_y, 'kitti', alpha=obj.alpha, frame='camera')
+    return Bbox3D(obj.x, obj.y, obj.z, obj.l, obj.w, obj.h, obj.rot_y, alpha=obj.alpha, frame='camera')
 
 
 def get_box_to_cam_trans(box):
