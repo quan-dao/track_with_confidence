@@ -1,6 +1,8 @@
 import numpy as np
 from copy import deepcopy
 
+from utils.geometry import roty, rotz
+
 
 class Bbox2D(object):
     """An axis-aligned bounding box on image"""
@@ -71,15 +73,21 @@ class Bbox3D(object):
         self.yaw = yaw
         self.dataset = dataset
         # optional fields
-        self.frame = None
+        self.frame = None  # coordinate system where this box's pose is expressed
         self.obj_type = None
         self.cam_obs_angle = None  # applicable for KITTI dataset
+        self.stamp = None
+        self.score = None  # detection score
         if 'frame' in kwargs.keys():
-            self.frame = kwargs['frame']  # coordinate system where this box's pose is expressed
+            self.frame = kwargs['frame']
         if 'obj_type' in kwargs.keys():
             self.obj_type = kwargs['obj_type']
         if 'alpha' in kwargs.keys():
             self.cam_obs_angle = kwargs['alpha']
+        if 'stamp' in kwargs.keys():
+            self.stamp = kwargs['stamp']
+        if 'score' in kwargs.keys():
+            self.score = kwargs['score']
 
     def __repr__(self):
         re = 'Bbox3D| center:[{:.3f}, {:.3f}, {:.3f}],  size:[{:.3f}, {:.3f}, {:.3f}],  yaw:{:.3f}'.format(
@@ -102,21 +110,40 @@ class Bbox3D(object):
             y_corners = self.w / 2.0 * np.array([1, -1, -1, 1, 1, -1, -1, 1])
             z_corners = self.h / 2.0 * np.array([1, 1, -1, -1, 1, 1, -1, -1])
         else:
-            # kitti convention: z-forward, x-right, y-down, origin of box local frame is center of bottom face
+            # kitti convention: x-forward, y-down, origin of box local frame is center of bottom face
             x_corners = self.l / 2.0 * np.array([1, 1, 1, 1, -1, -1, -1, -1])
             y_corners = self.h * np.array([-1, -1, 0, 0, -1, -1, 0, 0])
             z_corners = self.w / 2.0 * np.array([-1, 1, 1, -1, -1, 1, 1, -1])
         corners = np.vstack((x_corners, y_corners, z_corners))
         return corners
 
-    def transform_(self, trans_mat, dst_frame):
-        """TODO: map box's coordinate from one frame to another
+    def transform_(self, current_to_dst, dst_frame):
+        """Map box's coordinate from one frame to another
 
         Args:
-            trans_mat (np.ndarray): homogeneous transformation matrix, shape (4, 4)
+            current_to_dst (np.ndarray): homogeneous transformation matrix, shape (4, 4)
             dst_frame (str): name of destination frame
         """
-        pass
+        # construct pose of box in its current frame of reference
+        pose = np.eye(4)
+        if self.dataset == 'kitti':
+            # kitti convention: vertical direction is y-axis
+            pose[:3, :3] = roty(self.yaw)
+        else:
+            # waymo & nuscenes: vertical direction is z-axis
+            pose[:3, :3] = rotz(self.yaw)
+        pose[:3, 3] = self.center
+        # map pose to new frame
+        pose = current_to_dst @ pose
+        # update box's center & yaw accordingly
+        self.center = pose[:3, 3]
+        if self.dataset == 'kitti':
+            # kitti convention: vertical direction is y-axis
+            self.yaw = np.arctan2(pose[0, 2], pose[0, 0])
+        else:
+            # waymo & nuscenes: vertical direction is z-axis
+            self.yaw = np.arctan2(pose[1, 0], pose[0, 0])
+        self.frame = dst_frame
 
     def project_on_image(self, box_to_cam, cam_proj_mat):
         """ Project box's corners on image using camera projection matrix

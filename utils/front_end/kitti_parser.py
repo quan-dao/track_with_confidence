@@ -2,6 +2,7 @@ import numpy as np
 from collections import namedtuple
 
 from utils.data_classes import Bbox2D, Bbox3D
+from utils.geometry import rotx, roty, rotz, transform_from_rot_trans
 
 
 # Per dataformat.txt
@@ -103,50 +104,6 @@ class Calibration(object):
                     pass
 
         return data
-
-
-def inverse_rigid_trans(Tr):
-    """ Inverse a rigid body transform matrix (3x4 as [R|t])
-        [R'|-R't]
-    """
-    inv_Tr = np.zeros_like(Tr) # 3x4
-    inv_Tr[0:3, 0:3] = np.transpose(Tr[0:3,0:3])
-    inv_Tr[0:3, 3] = np.dot(-np.transpose(Tr[0:3, 0:3]), Tr[0:3, 3])
-    return inv_Tr
-
-
-def rotx(t):
-    """Rotation about the x-axis."""
-    c = np.cos(t)
-    s = np.sin(t)
-    return np.array([[1,  0,  0],
-                     [0,  c, -s],
-                     [0,  s,  c]])
-
-
-def roty(t):
-    """Rotation about the y-axis."""
-    c = np.cos(t)
-    s = np.sin(t)
-    return np.array([[c,  0,  s],
-                     [0,  1,  0],
-                     [-s, 0,  c]])
-
-
-def rotz(t):
-    """Rotation about the z-axis."""
-    c = np.cos(t)
-    s = np.sin(t)
-    return np.array([[c, -s,  0],
-                     [s,  c,  0],
-                     [0,  0,  1]])
-
-
-def transform_from_rot_trans(R, t):
-    """Transformation matrix from rotation matrix and translation vector."""
-    R = R.reshape(3, 3)
-    t = t.reshape(3, 1)
-    return np.vstack((np.hstack([R, t]), [0, 0, 0, 1]))
 
 
 def pose_from_oxts_packet(packet, scale):
