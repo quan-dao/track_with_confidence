@@ -2,6 +2,11 @@ import numpy as np
 from copy import deepcopy
 
 from utils.geometry import roty, rotz
+from global_config import GlobalConfig
+
+
+# global constants (their value are set in global_config.py)
+dataset = GlobalConfig.dataset
 
 
 class Bbox2D(object):
@@ -55,7 +60,7 @@ class Bbox2D(object):
 class Bbox3D(object):
     """A 3D bounding box"""
 
-    def __init__(self, center_x, center_y, center_z, length, width, height, yaw, dataset, **kwargs):
+    def __init__(self, center_x, center_y, center_z, length, width, height, yaw, **kwargs):
         """
         Args:
             center_x (float): x-coordinate of box's center
@@ -65,13 +70,10 @@ class Bbox3D(object):
             width (float): dimension along box's local y-axis
             height (float): dimension along box's local z-axis
             yaw (float):  rotation around up direction
-            dataset (str): dataset of this box
         """
-        assert dataset in ['kitti', 'waymo', 'nuscenes']
         self.center = np.array([center_x, center_y, center_z])
         self.l, self.w, self.h = length, width, height
         self.yaw = yaw
-        self.dataset = dataset
         # optional fields
         self.frame = None  # coordinate system where this box's pose is expressed
         self.obj_type = None
@@ -107,7 +109,7 @@ class Bbox3D(object):
         """ Compute box 's corners in box's local frame. Convention: \
             forward face is 0-1-2-3, backward face is 4-5-6-7, top face is 0-1-5-4, bottom face is 3-2-6-7
         """
-        if self.dataset != 'kitti':
+        if dataset != 'kitti':
             # waymo & nuscenes convention: x-forward, y-left, z-up, origin of box local frame is box center
             x_corners = self.l / 2.0 * np.array([1, 1, 1, 1, -1, -1, -1, -1])
             y_corners = self.w / 2.0 * np.array([1, -1, -1, 1, 1, -1, -1, 1])
@@ -129,7 +131,7 @@ class Bbox3D(object):
         """
         # construct pose of box in its current frame of reference
         pose = np.eye(4)
-        if self.dataset == 'kitti':
+        if dataset == 'kitti':
             # kitti convention: vertical direction is y-axis
             pose[:3, :3] = roty(self.yaw)
         else:
@@ -140,7 +142,7 @@ class Bbox3D(object):
         pose = current_to_dst @ pose
         # update box's center & yaw accordingly
         self.center = pose[:3, 3]
-        if self.dataset == 'kitti':
+        if dataset == 'kitti':
             # kitti convention: vertical direction is y-axis
             self.yaw = np.arctan2(pose[0, 2], pose[0, 0])
         else:

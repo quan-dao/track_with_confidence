@@ -9,6 +9,7 @@ from utils.geometry import put_angle_in_range
 dim_z = GlobalConfig.dim_z  # [x, y, z, yaw]
 yaw_idx = GlobalConfig.yaw_index
 unmeasurable_state_cov = GlobalConfig.kf_unmeasurable__covariance
+dataset = GlobalConfig.dataset
 
 
 def is_null(val):
@@ -22,12 +23,11 @@ class ConstantTurningRateVelocity(object):
     num_velocities = dim_x - dim_z
     H = np.concatenate((np.eye(dim_z), np.zeros((dim_z, dim_x - dim_z))), axis=1).astype(np.float)
 
-    def __init__(self, pose, obj_type, dataset):
+    def __init__(self, pose, obj_type):
         """
         Args:
             pose (np.ndarray): [4, 1] [x, y, z, theta] - pose of 3D box in global frame
             obj_type (str): type of box
-            dataset (str): name of dataset
         """
         # state vector
         self.x = np.vstack((pose, np.zeros((self.num_velocities, 1))))  # [x, y, z, yaw, long_velo, z_dot, yaw_dot]
@@ -124,12 +124,11 @@ class ConstantVelocity(object):
     # measurement model
     H = np.concatenate((np.eye(dim_z), np.zeros((dim_z, num_velocities))), axis=1).astype(np.float)
 
-    def __init__(self, pose, obj_type, dataset):
+    def __init__(self, pose, obj_type):
         """
         Args:
             pose (np.ndarray): pose of 3D box in global frame (x, y, z, theta), shape (4, 1)
             obj_type (str): type of box
-            dataset (str): name of dataset
         """
         # state vector
         self.x = np.vstack((pose, np.zeros((self.num_velocities, 1))))  # [x, y, z, yaw, x_dot, y_dot, z_dot, yaw_dot]
@@ -166,19 +165,18 @@ class ConstantVelocity(object):
 
 
 class KalmanFilter(object):
-    def __init__(self, pose, obj_type, dataset):
+    def __init__(self, pose, obj_type):
         """
         Args:
             pose (np.ndarray): pose of 3D box in global frame (x, y, z, theta), shape (4, 1)
             obj_type (str): type of box
-            dataset (str): name of dataset
         """
         nusc_name = get_nuscenes_name(obj_type, dataset)
         if nusc_name == 'pedestrian':
-            self._state = ConstantVelocity(pose, obj_type, dataset)
+            self._state = ConstantVelocity(pose, obj_type)
             self._model = 'cv'
         else:
-            self._state = ConstantTurningRateVelocity(pose, obj_type, dataset)
+            self._state = ConstantTurningRateVelocity(pose, obj_type)
             self._model = 'ctrv'
 
     def predict(self):

@@ -16,13 +16,12 @@ yaw_idx = GlobalConfig.yaw_index
 class State(object):
     """ Represent state of an object at a point of time """
 
-    def __init__(self, meas, dataset):
+    def __init__(self, meas):
         """
         Args:
             meas (Measurement): a measurement whose measurement vector is expressed in global frame
-            dataset (str): name of dataset
         """
-        self._kf = KalmanFilter(meas.z, meas.obj_type, dataset)
+        self._kf = KalmanFilter(meas.z, meas.obj_type)
         self.size = meas.size  # [3] (length, width, height)
         self.stamp = meas.stamp
 
@@ -154,8 +153,7 @@ def cvt_state_to_bbox3d(state, dataset, box_id=None, score=None):
     Returns:
         Bbox3D: a 3D bounding box
     """
-    box = Bbox3D(state.x[0, 0], state.x[1, 0], state.x[2, 0], state.size[0], state.size[1], state.size[2],
-                 state.x[3, 0], dataset)
+    box = Bbox3D(state.x[0, 0], state.x[1, 0], state.x[2, 0], state.size[0], state.size[1], state.size[2], state.x[3, 0])
     if box_id:
         if not isinstance(box_id, str):
             box_id = str(box_id)
