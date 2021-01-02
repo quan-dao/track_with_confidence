@@ -202,8 +202,17 @@ def kitti_obj_to_bbox2d(obj):
     return Bbox2D(obj.x1, obj.y1, obj.x2, obj.y2, obj.type)
 
 
-def kitti_obj_to_bbox3d(obj):
-    return Bbox3D(obj.x, obj.y, obj.z, obj.l, obj.w, obj.h, obj.rot_y, alpha=obj.alpha, frame='camera')
+def kitti_obj_to_bbox3d(obj, timestamp=None, obj_type=None):
+    """
+    Args:
+        obj (KittiObject): a line in kitti-format detection file
+        timestamp (int):
+        obj_type (str)
+    Returns:
+         Bbox3D
+    """
+    return Bbox3D(obj.x, obj.y, obj.z, obj.l, obj.w, obj.h, obj.rot_y, alpha=obj.alpha, frame='camera', score=obj.score,
+                  stamp=timestamp, obj_type=obj_type)
 
 
 def get_box_to_cam_trans(box):

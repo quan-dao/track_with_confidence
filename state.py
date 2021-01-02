@@ -142,12 +142,11 @@ class State(object):
         return pseudo_log_likelihood(meas.z, mean=z_expected, cov=S)
 
 
-def cvt_state_to_bbox3d(state, dataset, box_id=None, score=None):
+def cvt_state_to_bbox3d(state, box_id=None, score=None):
     """Convert a state to a 3D bounding box
 
     Args:
         state (State): a state
-        dataset (str): name of dataset
         box_id (int or str): id of tracklet where state is from
         score (float): detection score (to format tracking result)
     Returns:

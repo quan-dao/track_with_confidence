@@ -50,5 +50,6 @@ def cvt_bbox3d_to_measurement(box):
     """
     assert box.frame == 'world' or box.frame == 'c0', 'box must be in world (in case of Waymor or NuScenes) or ' \
                                                       '1st camera frame (in case of KITTI) for tracking to work'
-    assert box.stamp and box.score, 'box must have a timestamp and detection score'
+    assert box.stamp is not None, 'box must have a timestamp'
+    assert box.score is not None, 'box must have detection score'
     return Measurement(box.center, box.yaw, np.array([box.l, box.w, box.h]), box.stamp, box.obj_type, box.score)

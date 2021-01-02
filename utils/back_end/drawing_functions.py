@@ -56,7 +56,7 @@ def draw_rect_label(img, label, top_left_corner):
     """
     if not isinstance(label, str):
         label = str(label)
-    text_thickness, font_scale = 2, 2.0
+    text_thickness, font_scale = 1, 1.0
     text_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_thickness)
     # get label position
     text_x, text_y = top_left_corner[0], max(top_left_corner[1] - text_thickness, 0)
@@ -102,6 +102,6 @@ def draw_box3d_projection(img, vertices, label=None, colors=((0, 0, 255), (255, 
              (int(center_bottom_forward[0]), int(center_bottom_forward[1])),
              colors[0][::-1], linewidth)
 
-    if label:
+    if label is not None:
         draw_rect_label(img, label, np.amin(vertices, axis=0).tolist())
 
