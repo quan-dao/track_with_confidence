@@ -31,6 +31,8 @@ class GlobalConfig:
     dim_z = 4  # [x, y, z, yaw]
     yaw_index = 3  # index of yaw in z and state vector
     kf_unmeasurable__covariance = 1e2  # initial covariance of states that are unmeasurable (e.g. velocity)
+    ctrv_dim_x = 7  # [x, y, z, yaw, longitudal_velocity, z_dot, yaw_dot]
+    cv_dim_x = 8  # [x, y, z, yaw, x_dot, y_dot, z_dot, yaw_dot]
 
     '''
     Tracklet Parameters

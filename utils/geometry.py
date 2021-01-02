@@ -1,4 +1,5 @@
 import numpy as np
+from numba import njit
 
 
 def rotx(t):
@@ -33,3 +34,19 @@ def transform_from_rot_trans(R, t):
     R = R.reshape(3, 3)
     t = t.reshape(3, 1)
     return np.vstack((np.hstack([R, t]), [0, 0, 0, 1]))
+
+
+@njit
+def put_angle_in_range(angle):
+    """Put an angle in [-pi, pi)
+    Args:
+        angle (float)
+    Returns:
+        float: normalized angle in range [-pi, pi)
+    """
+    re = angle
+    while re < -np.pi:
+        re += 2 * np.pi
+    while re >= np.pi:
+        re -= 2 * np.pi
+    return re

@@ -78,6 +78,7 @@ class Bbox3D(object):
         self.cam_obs_angle = None  # applicable for KITTI dataset
         self.stamp = None
         self.score = None  # detection score
+        self.id = None  # tracking id
         if 'frame' in kwargs.keys():
             self.frame = kwargs['frame']
         if 'obj_type' in kwargs.keys():
@@ -88,6 +89,8 @@ class Bbox3D(object):
             self.stamp = kwargs['stamp']
         if 'score' in kwargs.keys():
             self.score = kwargs['score']
+        if 'id' in kwargs.keys():
+            self.id = kwargs['id']
 
     def __repr__(self):
         re = 'Bbox3D| center:[{:.3f}, {:.3f}, {:.3f}],  size:[{:.3f}, {:.3f}, {:.3f}],  yaw:{:.3f}'.format(
