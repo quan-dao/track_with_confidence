@@ -12,11 +12,12 @@ log_aff_thres = GlobalConfig.tracklet_tuning_log_likelihood_threshold
 conf_thres = GlobalConfig.tracklet_confidence_threshold
 dim_z = GlobalConfig.dim_z
 num_prev_sizes = GlobalConfig.tracklet_num_previous_sizes
+dataset = GlobalConfig.dataset
 
 
 class Tracklet(object):
     """ Represent a tracklet """
-    count = 0  # to count number of instances of this class
+    count = 1 if dataset == 'kitti' else 0  # to count number of instances of this class, kitti start counting from 1
     beta = GlobalConfig.tracklet_beta
 
     def __init__(self, meas):
@@ -36,6 +37,7 @@ class Tracklet(object):
         self.is_terminated = False  # True is tracklet is terminated
         self.obj_type = meas.obj_type
         self.most_recent_meas_score = meas.score  # to create tracking result for NuScenes
+        self.kitti_meas_alpha = meas.kitti_alpha  # to create tracking result for KITTI
         self.just_born = True  # to prevent new born tracklet from being reported
 
     def __repr__(self):
@@ -94,6 +96,7 @@ class Tracklet(object):
         self.history.append(predicted_tail)
 
         self.most_recent_meas_score = meas.score  # to create tracking result
+        self.kitti_meas_alpha = meas.kitti_alpha  # to create tracking result for KITTI
         # to switch off just_born flag
         if self.just_born:
             self.just_born = False

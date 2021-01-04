@@ -123,6 +123,8 @@ class TrackletManager(object):
                     # event A: tracklet low assoc with a tracklet high
                     tracklet_high = self.all_tracklets[self._high_conf_tracklets_ids[j]]
                     tracklet_high.merge_(tracklet_low)
+                    # terminate low confidence tracklet after it is merged with high confidence one
+                    tracklet_low.is_terminated = True
                 else:
                     if j - num_high == i:
                         # event B: termination of a low confidence tracklet

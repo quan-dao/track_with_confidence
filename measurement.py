@@ -13,7 +13,7 @@ dataset = GlobalConfig.dataset
 
 class Measurement(object):
     """For bounding boxes (Bbox3D) interface with tracking functionality"""
-    def __init__(self, position, yaw, size, timestamp, obj_type, det_score):
+    def __init__(self, position, yaw, size, timestamp, obj_type, det_score, kitti_alpha=None):
         """
         Args:
              position (np.ndarray): position of box's center in global frame, shape (3, )
@@ -22,6 +22,7 @@ class Measurement(object):
              timestamp (int): index of the frame when this measurement is created
              obj_type (str): type of this measurement
              det_score (float): detection score
+             kitti_alpha (float): camera observation angle
         """
         assert len(position.shape) == 1, 'position must be either an array'
         # measurement vector & covariance matrix
@@ -33,6 +34,9 @@ class Measurement(object):
         self.stamp = timestamp
         self.score = det_score
         self.obj_type = obj_type
+        self.kitti_alpha = None
+        if kitti_alpha is not None:
+            self.kitti_alpha = kitti_alpha
 
     def __repr__(self):
         return 'Measurement| position: [{:.3f}, {:.3f}, {:.3f}],  yaw: {:.3f}, size: [{:.3f}, {:.3f}, {:.3f}],  ' \
@@ -52,4 +56,8 @@ def cvt_bbox3d_to_measurement(box):
                                                       '1st camera frame (in case of KITTI) for tracking to work'
     assert box.stamp is not None, 'box must have a timestamp'
     assert box.score is not None, 'box must have detection score'
-    return Measurement(box.center, box.yaw, np.array([box.l, box.w, box.h]), box.stamp, box.obj_type, box.score)
+    if dataset == 'kitti':
+        return Measurement(box.center, box.yaw, np.array([box.l, box.w, box.h]), box.stamp, box.obj_type, box.score,
+                           kitti_alpha=box.cam_obs_angle)
+    else:
+        return Measurement(box.center, box.yaw, np.array([box.l, box.w, box.h]), box.stamp, box.obj_type, box.score)
