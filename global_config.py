@@ -38,9 +38,9 @@ class GlobalConfig:
     '''
     Tracklet Parameters
     '''
-    tracklet_num_previous_sizes = 5  # for State.__update_size
+    tracklet_num_previous_sizes = 15  # for State.__update_size
     tracklet_confidence_threshold = 0.45  # to determine a tracklet is high or low confident
-    tracklet_beta = 1.35  # for computing tracklet confidence
+    tracklet_beta = 3.35  # for computing tracklet confidence
     # tuning
     tracklet_tuning_log_likelihood_threshold = -11.  # past: -4.5
     tracklet_tuning_global_assoc_termination_constance = 0.5  # past 0.2
