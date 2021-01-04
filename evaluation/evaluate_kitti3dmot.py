@@ -100,7 +100,7 @@ class trackingEvaluation(object):
         # data and parameter
         self.gt_path           = os.path.join(gt_path, "label")
         self.t_sha             = t_sha
-        self.t_path            = '/home/user/Desktop/python_ws/track-with-confidence-v1.0/results/kitti/val_Car_2021_1_4_13_48'  # os.path.join("./results", t_sha, "data")
+        self.t_path            = '/home/user/Desktop/python_ws/track-with-confidence-v1.0/results/kitti/val_Car_2021_1_4_14_07'  # os.path.join("./results", t_sha, "data")
         
         # statistics and numbers for evaluation
         self.n_gt              = 0 # number of ground truth detections minus ignored false negatives and true positives
