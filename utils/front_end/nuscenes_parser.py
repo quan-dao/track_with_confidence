@@ -18,11 +18,11 @@ def parse_detection_file(detection_file):
     read_objects = {}
     with open(detection_file, 'r') as f:
         for line in f.readlines():
+            line = line.rstrip()
             line = line.split(',')
-            # first 2 entries are int
-            line[:2] = [int(x) for x in line[:2]]
+            line[0] = int(line[0])  # frame index
             # the rest are float
-            line[2:] = [float(x) for x in line[2:]]
+            line[2:-1] = [float(x) for x in line[2:-1]]
 
             o = NuScenesObject(*line)
 

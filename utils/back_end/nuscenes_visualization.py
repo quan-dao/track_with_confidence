@@ -1,5 +1,5 @@
 import numpy as np
-from collections import namedtuple
+from copy import deepcopy
 import cv2
 from pyquaternion import Quaternion
 
@@ -26,8 +26,8 @@ class NuCamera:
         ego_to_world = np.eye(4)
         ego_to_world[:3, :3] = Quaternion(ego_pose['rotation']).rotation_matrix
         ego_to_world[:3, 3] = np.array(ego_pose['translation'])
-        cam_to_world = ego_to_world @ cam_to_ego
-        self.world_to_cam = np.linalg.inv(cam_to_world)  # cache this for checking box visibility
+        self.cam_to_world = ego_to_world @ cam_to_ego
+        self.world_to_cam = np.linalg.inv(self.cam_to_world)  # cache this for checking box visibility
         K = np.array(calib_sensor['camera_intrinsic'])
         self.proj_matrix = K @ self.world_to_cam[:3, :]  # shape (3, 4)
         # other field
@@ -63,14 +63,13 @@ def compute_box_visibility(box, cam):
         int: -1 means invisible, >=0 number of box's corners visible on an image
     """
     assert box.frame == 'world', "This function is designed for box in 'world' frame"
-    box.transform_(cam.world_to_cam, cam.name)
-    if box.center[2] < 0:
+    box_in_cam = deepcopy(box)
+    box_in_cam.transform_(cam.world_to_cam, cam.name)  # here ignore box_in_cam yaw, cuz this yaw is wrongly calculated,
+    # in camera frame, yaw is around -y-axis, not z-axis as in the code
+    if box_in_cam.center[2] < 0:
         # box is behind camera
-        box.transform_(np.linalg.inv(cam.world_to_cam), 'world')  # map box back to world frame
         return -1
     else:
-        # map box back to world frame
-        box.transform_(np.linalg.inv(cam.world_to_cam), 'world')
         # project box on camera
         proj = box.project_on_image(get_box_to_world(box), cam.proj_matrix)
         # count number of projected corners are inside the image

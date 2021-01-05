@@ -29,7 +29,7 @@ def format_detection(frame_idx, d):
     """
     q = Quaternion(d['rotation'])
     yaw = q.angle if q.axis[2] > 0 else -q.angle
-    re = '{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, world\n'.format(
+    re = '{},{},{},{},{},{},{},{},{},{},world\n'.format(
         frame_idx, d['detection_name'], d['size'][2], d['size'][0], d['size'][1], *d['translation'], yaw, d['detection_score']
     )
     return re
