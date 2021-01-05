@@ -81,6 +81,7 @@ class Bbox3D(object):
         self.stamp = None
         self.score = None  # detection score
         self.id = None  # tracking id
+        self.is_on_camera = None  # camera on which this box is visible, applicable for NuScenes and Waymo
         if 'frame' in kwargs.keys():
             self.frame = kwargs['frame']
         if 'obj_type' in kwargs.keys():
@@ -157,7 +158,7 @@ class Bbox3D(object):
             box_to_cam (np.ndarray): transformation matrix from box frame to camera frame, shape (4, 4)
             cam_proj_mat (np.ndarray): camera projection matrix, (3, 4)
 
-        ReturnsL
+        Returns:
             np.ndarray: projected corners, (8, 2)
         """
         corners = self.corners()  # (3, 8)
