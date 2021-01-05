@@ -100,7 +100,7 @@ class trackingEvaluation(object):
         # data and parameter
         self.gt_path           = os.path.join(gt_path, "label")
         self.t_sha             = t_sha
-        self.t_path            = '/home/user/Desktop/python_ws/track-with-confidence-v1.0/results/kitti/val_Car_2021_1_4_14_07'  # os.path.join("./results", t_sha, "data")
+        self.t_path            = os.path.join("./results/kitti", t_sha, "data")
         
         # statistics and numbers for evaluation
         self.n_gt              = 0 # number of ground truth detections minus ignored false negatives and true positives
@@ -1075,7 +1075,7 @@ class stat:
         # zxc
 
     def plot(self):
-        save_dir = os.path.join("./results", self.t_sha)
+        save_dir = os.path.join("./results/kitti", self.t_sha)
 
         self.plot_over_recall(self.mota_list, 'MOTA - Recall Curve', 'MOTA', os.path.join(save_dir, 'MOTA_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))
         self.plot_over_recall(self.sMOTA_list, 'sMOTA - Recall Curve', 'sMOTA', os.path.join(save_dir, 'sMOTA_recall_curve_%s_%s.pdf' % (self.cls, self.suffix)))

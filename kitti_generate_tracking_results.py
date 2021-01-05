@@ -1,4 +1,5 @@
 import os
+import glob
 import sys
 import numpy as np
 from tqdm import tqdm
@@ -7,9 +8,9 @@ from utils.front_end.kitti_parser import load_oxts_packets_and_poses
 from utils.front_end.kitti_parser import parse_detection_file, kitti_obj_to_bbox3d, Calibration
 from utils.front_end.kitti_parser import get_box_to_cam_trans
 from utils.data_classes import Bbox3D
-from tracklet_manager import TrackletManager
-from measurement import cvt_bbox3d_to_measurement
-from state import cvt_state_to_bbox3d
+from tracking.tracklet_manager import TrackletManager
+from tracking.measurement import cvt_bbox3d_to_measurement
+from tracking.state import cvt_state_to_bbox3d
 from global_config import GlobalConfig
 
 
@@ -50,16 +51,20 @@ seq_names.sort()
 
 
 if __name__ == '__main__':
-    # python generate_kitti_re.py val obj_type datetime
-    data_split = sys.argv[1]
+    # python generate_kitti_re.py t_sha obj_type data_split
+    t_sha = sys.argv[1]
     obj_type = sys.argv[2]
-    datetime = sys.argv[3]
-    assert data_split in ['val', 'test']
+    data_split = sys.argv[3]
     assert obj_type in ['Car', 'Pedestrian', 'Cyclist']
-
-    result_dir = os.path.join(result_root, '{}_{}_{}'.format(data_split, obj_type, datetime))
+    assert data_split in ['val', 'test']
+    result_dir = os.path.join(result_root, t_sha, 'data')
     if not os.path.exists(result_dir):
         os.makedirs(result_dir)
+    else:
+        # clear result in this folder
+        files = glob.glob(os.path.join(result_dir, '*.txt'))
+        for f in files:
+            os.remove(f)
 
     for seq_idx, seq in enumerate(seq_names):
         print('\n--------------------------------------------')

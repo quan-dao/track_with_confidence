@@ -1,0 +1,2 @@
+python kitti_generate_tracking_results.py pointrcnn_Car_val Car val
+python evaluation/evaluate_kitti3dmot.py pointrcnn_Car_val

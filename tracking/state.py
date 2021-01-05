@@ -1,9 +1,9 @@
 import numpy as np
 from copy import deepcopy
 
-from kalman_filter import KalmanFilter
+from .kalman_filter import KalmanFilter
 from global_config import GlobalConfig
-from measurement import Measurement
+from .measurement import Measurement
 from utils.geometry import put_angle_in_range
 from utils.stats import pseudo_log_likelihood
 from utils.data_classes import Bbox3D

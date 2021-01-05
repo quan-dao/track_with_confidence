@@ -10,11 +10,13 @@ from utils.front_end.kitti_parser import load_oxts_packets_and_poses
 from utils.front_end.kitti_parser import parse_detection_file, kitti_obj_to_bbox3d, Calibration
 from utils.front_end.kitti_parser import get_box_to_cam_trans
 from utils.back_end.drawing_functions import draw_bbox3d
-from tracklet_manager import TrackletManager
-from measurement import cvt_bbox3d_to_measurement
-from state import cvt_state_to_bbox3d
+from tracking.tracklet_manager import TrackletManager
+from tracking.measurement import cvt_bbox3d_to_measurement
+from tracking.state import cvt_state_to_bbox3d
+from global_config import GlobalConfig
 
 
+assert GlobalConfig.dataset == 'kitti'
 seq_name = '0000'
 
 # get OXTS data

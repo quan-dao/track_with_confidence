@@ -1,7 +1,7 @@
 import numpy as np
 
-from tracklet import Tracklet
-from measurement import Measurement
+from .tracklet import Tracklet
+from .measurement import Measurement
 from global_config import GlobalConfig
 from utils.data_association import greedy_matching as lap_solver
 

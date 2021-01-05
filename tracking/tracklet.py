@@ -1,8 +1,8 @@
 import numpy as np
 
 from global_config import GlobalConfig
-from measurement import Measurement
-from state import State
+from .measurement import Measurement
+from .state import State
 from utils.stats import pseudo_log_likelihood
 
 

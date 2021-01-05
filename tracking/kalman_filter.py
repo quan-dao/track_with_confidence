@@ -1,7 +1,7 @@
 import numpy as np
 
 from global_config import GlobalConfig, get_nuscenes_name
-from covariances import NuScenesCovariances as Cov
+from .covariances import NuScenesCovariances as Cov
 from utils.geometry import put_angle_in_range
 
 

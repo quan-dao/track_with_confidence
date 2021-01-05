@@ -1,6 +1,6 @@
 import numpy as np
 
-from covariances import NuScenesCovariances as Cov
+from .covariances import NuScenesCovariances as Cov
 from global_config import GlobalConfig, get_nuscenes_name
 from utils.data_classes import Bbox3D
 
