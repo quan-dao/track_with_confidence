@@ -10,7 +10,7 @@ from utils.data_classes import Bbox3D
 from tracking.measurement import cvt_bbox3d_to_measurement
 from tracking.tracklet_manager import TrackletManager
 from tracking.state import cvt_state_to_bbox3d
-from global_config import nuscenes_tracking_names
+from global_config import nuscenes_tracking_names, GlobalConfig
 
 
 def format_result(sample_token, box):
@@ -52,6 +52,7 @@ def format_result(sample_token, box):
 
 
 if __name__ == '__main__':
+    report_conf_thresh = GlobalConfig.nuscenes_tracklet_report_conf_threshold
     # Usage: python nuscenes_generate_tracking_results data_split datetime_str
     if len(sys.argv) != 3:
         print("Usage: python nuscenes_generate_tracking_results data_split datetime_str")
@@ -106,7 +107,8 @@ if __name__ == '__main__':
             tracking_results[sample_token] = []
             for obj_type, manager in tracklet_managers.items():
                 for tracklet in manager.all_tracklets:
-                    if tracklet.tail.stamp == frame_idx and not tracklet.just_born:
+                    if tracklet.tail.stamp == frame_idx and not tracklet.just_born and \
+                            tracklet.conf > report_conf_thresh[obj_type]:
                         box = cvt_state_to_bbox3d(tracklet.tail, tracklet.id, score=tracklet.most_recent_meas_score,
                                                   frame='world', obj_type=tracklet.obj_type)
                         # find camera this box is visible on and draw

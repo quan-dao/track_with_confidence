@@ -1,2 +1,5 @@
-python nuscenes_generate_tracking_results.py val 2020_01_06_13_09
-python nuscenes_eval_tracking.py --output_dir ./results/nuscenes/val_2020_01_06_13_09 ./results/nuscenes/val_2020_01_06_13_09/nuscenes_val_2020_01_06_13_09.json > ./results/nuscenes/val_2020_01_06_13_09/output.txt
+python nuscenes_generate_tracking_results.py val final \
+&& \
+python nuscenes_eval_tracking.py --output_dir ./results/nuscenes/val_final \
+./results/nuscenes/val_final/nuscenes_val_final.json > \
+./results/nuscenes/val_final/output.txt

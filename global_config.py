@@ -41,9 +41,28 @@ class GlobalConfig:
     '''
     Tracklet Parameters
     '''
-    tracklet_num_previous_sizes = 5  # for State.__update_size
-    tracklet_confidence_threshold = 0.45  # to determine a tracklet is high or low confident
-    tracklet_beta = 1.35  # for computing tracklet confidence (best: 5.35)
-    # tuning
-    tracklet_tuning_log_likelihood_threshold = -4.5  # (best: -6.5)
-    tracklet_tuning_global_assoc_termination_constance = 0.05  # (best: 0.5)
+    if dataset == 'nuscenes':
+        tracklet_num_previous_sizes = 5  # for State.__update_size
+        tracklet_confidence_threshold = 0.45  # to determine a tracklet is high or low confident
+        tracklet_beta = 1.35  # for computing tracklet confidence (best: 5.35)
+        # tuning
+        tracklet_tuning_log_likelihood_threshold = -4.5  # (best: -6.5)
+        tracklet_tuning_global_assoc_termination_constance = 0.05  # (best: 0.5)
+        nuscenes_tracklet_report_conf_threshold = {
+            'bicycle': 0.225,
+            'bus': 0.,
+            'car': 0.1,
+            'motorcycle': 0.,
+            'pedestrian': 0.1,
+            'trailer': 0.,
+            'truck': 0.1
+        }
+    elif dataset == 'kitti':
+        tracklet_num_previous_sizes = 15  # for State.__update_size
+        tracklet_confidence_threshold = 0.45  # to determine a tracklet is high or low confident
+        tracklet_beta = 5.35  # for computing tracklet confidence (best: 5.35)
+        # tuning
+        tracklet_tuning_log_likelihood_threshold = -6.5  # (best: -6.5)
+        tracklet_tuning_global_assoc_termination_constance = 0.6  # (best: 0.5)
+    else:
+        raise ValueError("{} is not supported".format(dataset))
