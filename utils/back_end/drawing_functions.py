@@ -1,6 +1,11 @@
 import numpy as np
 import cv2
+
 from utils.data_classes import Bbox2D, Bbox3D
+from global_config import GlobalConfig
+
+# global constants (defined in global_config.py)
+dataset = GlobalConfig.dataset
 
 
 def draw_bbox2d(img, box, color=(255, 0, 0)):
@@ -25,7 +30,6 @@ def draw_bbox3d(img, projection, label=None):
         label (str or int): box's label
     """
     draw_box3d_projection(img, projection, label)
-
 
 
 def draw_rect(img, selected_corners, color, linewidth=2):
@@ -56,7 +60,10 @@ def draw_rect_label(img, label, top_left_corner):
     """
     if not isinstance(label, str):
         label = str(label)
-    text_thickness, font_scale = 1, 1.0
+    if dataset == 'kitti':
+        text_thickness, font_scale = 1, 1.0
+    else:
+        text_thickness, font_scale = 2, 2.0
     text_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_thickness)
     # get label position
     text_x, text_y = top_left_corner[0], max(top_left_corner[1] - text_thickness, 0)

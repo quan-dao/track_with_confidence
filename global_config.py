@@ -18,8 +18,10 @@ def get_nuscenes_name(name, dataset):
         return kitti_to_nuscenes[name]
     elif dataset == 'waymo':
         raise ValueError('waymo is not supported yet')
+    elif dataset == 'nuscenes':
+        return name
     else:
-        raise ValueError("dataset has to in ['kitti', 'waymo']")
+        raise ValueError("dataset has to in ['kitti', 'waymo', 'nuscenes']")
 
 
 class GlobalConfig:

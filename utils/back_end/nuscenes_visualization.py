@@ -62,7 +62,7 @@ def compute_box_visibility(box, cam):
     Returns:
         int: -1 means invisible, >=0 number of box's corners visible on an image
     """
-    assert box.frame == 'world', "This function is designed for box in 'world' frame"
+    assert box.frame == 'world', "This function is designed for box in 'world' frame, while box.frame = {}".format(box.frame)
     box_in_cam = deepcopy(box)
     box_in_cam.transform_(cam.world_to_cam, cam.name)  # here ignore box_in_cam yaw, cuz this yaw is wrongly calculated,
     # in camera frame, yaw is around -y-axis, not z-axis as in the code
