@@ -142,7 +142,7 @@ class State(object):
         return pseudo_log_likelihood(meas.z, mean=z_expected, cov=S)
 
 
-def cvt_state_to_bbox3d(state, box_id=None, score=None, alpha=None, frame=None):
+def cvt_state_to_bbox3d(state, box_id=None, score=None, alpha=None, frame=None, obj_type=None):
     """Convert a state to a 3D bounding box
 
     Args:
@@ -151,6 +151,7 @@ def cvt_state_to_bbox3d(state, box_id=None, score=None, alpha=None, frame=None):
         score (float): detection score (to format tracking result)
         alpha (float): camera observation angle (applicable for KITTI)
         frame (str): frame relative to which box's pose is expressed
+        obj_type (str): type of box
     Returns:
         Bbox3D: a 3D bounding box
     """
@@ -165,5 +166,7 @@ def cvt_state_to_bbox3d(state, box_id=None, score=None, alpha=None, frame=None):
         box.cam_obs_angle = alpha
     if frame is not None:
         box.frame = frame
+    if obj_type is not None:
+        box.obj_type = obj_type
     return box
 

@@ -34,16 +34,16 @@ class GlobalConfig:
     '''
     dim_z = 4  # [x, y, z, yaw]
     yaw_index = 3  # index of yaw in z and state vector
-    kf_unmeasurable__covariance = 1e2  # initial covariance of states that are unmeasurable (e.g. velocity)
+    kf_unmeasurable__covariance = 1e1  # initial covariance of states that are unmeasurable (e.g. velocity)
     ctrv_dim_x = 7  # [x, y, z, yaw, longitudal_velocity, z_dot, yaw_dot]
     cv_dim_x = 8  # [x, y, z, yaw, x_dot, y_dot, z_dot, yaw_dot]
 
     '''
     Tracklet Parameters
     '''
-    tracklet_num_previous_sizes = 15  # for State.__update_size
+    tracklet_num_previous_sizes = 5  # for State.__update_size
     tracklet_confidence_threshold = 0.45  # to determine a tracklet is high or low confident
-    tracklet_beta = 5.35  # for computing tracklet confidence (best: 5.35)
+    tracklet_beta = 1.35  # for computing tracklet confidence (best: 5.35)
     # tuning
-    tracklet_tuning_log_likelihood_threshold = -6.5  # (best: -6.5)
-    tracklet_tuning_global_assoc_termination_constance = 0.6  # (best: 0.5)
+    tracklet_tuning_log_likelihood_threshold = -4.5  # (best: -6.5)
+    tracklet_tuning_global_assoc_termination_constance = 0.05  # (best: 0.5)
