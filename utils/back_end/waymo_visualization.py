@@ -38,6 +38,7 @@ class WaymoCamera:
         self.vehicle_to_cam = np.linalg.inv(self.camera_to_vehicle)
         self.im_width = im_width
         self.im_height = im_height
+        self.im = None  # to be updated every frame of a context
 
     def project_on_image(self, points):
         """Project a set of 3D points that are already in camera's frame onto camera's image
@@ -73,7 +74,7 @@ def compute_box_visibility(box, cam):
     else:
         # get box's corners in its local frame
         corners = box.corners()  # currently in box's local frame, shape (3, 8)
-        corners = np.vstack((corners, np.ones(1, 8)))  # shape (4, 8)
+        corners = np.vstack((corners, np.ones((1, 8))))  # shape (4, 8)
         # construct box's pose in ego_vehicle frame
         box_to_ego = np.eye(4)
         box_to_ego[:3, :3] = rotz(box.yaw)
@@ -94,11 +95,11 @@ def find_camera(box, camera_infos):
 
     Args:
         box (Bbox3D): a Bbox3D in 'world' frame
-        camera_infos (tuple[WaymoCamera]):
+        camera_infos (list[WaymoCamera]):
     """
     box_vis = [compute_box_visibility(box, cam) for cam in camera_infos]
     cam_idx = np.argmax(box_vis).item()
-    if box_vis[cam_idx] > 2:
+    if box_vis[cam_idx] > 3:
         box.is_on_camera = cam_idx
 
 
@@ -107,14 +108,14 @@ def draw_bbox3d_on_image(box, camera_infos, label=None):
 
     Args:
         box (Bbox3D): a Bbox3D in 'world' frame
-        camera_infos (tuple[NuCamera]):
+        camera_infos (list[WaymoCamera]):
         label (str or int): box's label
     """
     if box.is_on_camera is not None:
         cam = camera_infos[box.is_on_camera]
         # get box's corners in its local frame
         corners = box.corners()  # currently in box's local frame, shape (3, 8)
-        corners = np.vstack((corners, np.ones(1, 8)))  # shape (4, 8)
+        corners = np.vstack((corners, np.ones((1, 8))))  # shape (4, 8)
         # construct box's pose in ego_vehicle frame
         box_to_ego = np.eye(4)
         box_to_ego[:3, :3] = rotz(box.yaw)
