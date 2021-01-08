@@ -98,8 +98,9 @@ def generate_tracking_results_for_one_record(context_name, context_idx, nbr_cont
         ego_to_world = ego_poses[timestamp].ego_pose
         all_measurements = {name: [] for name in managers.keys()}
         for box in boxes_3d:
-            box.transform_(ego_to_world, 'world')
-            all_measurements[box.obj_type].append(cvt_bbox3d_to_measurement(box))
+            if box.score > 0.15:
+                box.transform_(ego_to_world, 'world')
+                all_measurements[box.obj_type].append(cvt_bbox3d_to_measurement(box))
 
         # invoke tracking
         for obj_type, manager in managers.items():
