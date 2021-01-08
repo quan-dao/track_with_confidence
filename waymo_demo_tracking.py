@@ -7,6 +7,10 @@ from waymo_open_dataset import dataset_pb2 as open_dataset
 
 from utils.front_end.waymo_parser import parse_detection_file, waymo_object_to_bbox3d, parse_ego_pose_file
 from utils.back_end.waymo_visualization import WaymoCamera, find_camera, draw_bbox3d_on_image
+from tracking.tracklet_manager import TrackletManager
+from tracking.state import cvt_state_to_bbox3d
+from tracking.measurement import cvt_bbox3d_to_measurement
+from global_config import waymo_to_nuscenes
 
 
 record_dir = '/home/user/dataset/waymo-open/segments/val/'
@@ -15,7 +19,8 @@ records.sort()
 dataset = tf.data.TFRecordDataset(os.path.join(record_dir, records[7]), compression_type='')
 
 # prepare canvas for rendering sequence
-resized_width, resized_height_front, resized_height_back= (192*2, 128*2, 104*2)
+_r = 3
+resized_width, resized_height_front, resized_height_back= (192*_r, 128*_r, 104*_r)
 layout = {
     'FRONT_LEFT': (0, 0),
     'FRONT': (0, resized_width),
@@ -32,7 +37,8 @@ context_name = None
 ego_poses_file = './data/waymo'
 detections_file = './data/waymo'
 detections = None
-ego_poses = None  # TODO: parse ego_pose file to make a dict {timestamp_micro: ego_pose}
+ego_poses = None
+managers = {name: TrackletManager(name) for name in waymo_to_nuscenes.keys()}
 
 waymo_cameras = []
 frame_idx = 0
@@ -56,26 +62,7 @@ for data in dataset:
             height = camera_calibration.height
             waymo_cameras.append(WaymoCamera(name, intrinsic, extrinsic, width, height))
 
-    # get detection of this frame
-    boxes_3d = []
-    if frame.timestamp_micros in detections.keys():
-        boxes_3d = [waymo_object_to_bbox3d(o, frame_idx) for o in detections[frame.timestamp_micros]]
-
-    #------------------------------------------------------------------
-    # tracking code goes here
-    # TODO: map box to global frame
-    ego_to_world = ego_poses[frame.timestamp_micros].ego_pose
-    for box in boxes_3d:
-        box.transform_(ego_to_world, 'world')
-
-    # TODO: invoke tracking
-
-    # TODO: map back to ego_vehicle frame for rendering
-    world_to_ego = np.linalg.inv(ego_to_world)
-    for box in boxes_3d:
-        box.transform_(world_to_ego, 'ego_vehicle')
-    # ------------------------------------------------------------------
-
+    # get images of this frame
     all_images = {}
     for camera_image in frame.images:
         camera_name = open_dataset.CameraName.Name.Name(camera_image.name)
@@ -84,11 +71,38 @@ for data in dataset:
     for cam in waymo_cameras:
         cam.im = all_images[cam.name]
 
-    # draw
-    for i, box in enumerate(boxes_3d):
-        if box.score > 0.3 and box.obj_type == 'VEHICLE':
-            find_camera(box, waymo_cameras)
-            draw_bbox3d_on_image(box, waymo_cameras, label=i)
+    # get detection of this frame
+    boxes_3d = []
+    if frame.timestamp_micros in detections.keys():
+        boxes_3d = [waymo_object_to_bbox3d(o, frame_idx) for o in detections[frame.timestamp_micros]]
+
+    # ------------------------------------------------------------------
+    # tracking code goes here
+    # map box to global frame
+    all_measurements = {name: [] for name in managers.keys()}
+    ego_to_world = ego_poses[frame.timestamp_micros].ego_pose
+    for box in boxes_3d:
+        box.transform_(ego_to_world, 'world')
+        all_measurements[box.obj_type].append(cvt_bbox3d_to_measurement(box))
+
+    # invoke tracking
+    for obj_type, manager in managers.items():
+        manager.run_(all_measurements[obj_type], frame_idx)
+
+    world_to_ego = np.linalg.inv(ego_to_world)
+    for obj_type, manager in managers.items():
+        for tracklet in manager.all_tracklets:
+            if tracklet.tail.stamp == frame_idx and not tracklet.just_born and tracklet.conf > 0.1:
+                box = cvt_state_to_bbox3d(tracklet.tail, tracklet.id, tracklet.most_recent_meas_score, frame='world',
+                                          obj_type=obj_type)
+                # map back to ego_vehicle frame
+                box.transform_(world_to_ego, 'ego_vehicle')
+                # find camera this box is visible on and draw
+                if obj_type == 'VEHICLE':
+                    find_camera(box, waymo_cameras)
+                    draw_bbox3d_on_image(box, waymo_cameras, '{}:{}'.format(obj_type[:3], tracklet.id))
+    # ------------------------------------------------------------------
+
     for cam in waymo_cameras:
         _h = resized_height_front if 'FRONT' in cam.name else resized_height_back
         cam.im = cv2.resize(cam.im, (resized_width, _h))

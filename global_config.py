@@ -2,6 +2,7 @@
 kitti_object_name = {1: 'Pedestrian', 2: 'Car', 3: 'Cyclist'}
 kitti_to_nuscenes = {'Pedestrian': 'pedestrian', 'Car': 'car', 'Cyclist': 'bicycle'}
 nuscenes_tracking_names = ('bicycle', 'bus', 'car', 'motorcycle', 'pedestrian', 'trailer', 'truck')
+waymo_to_nuscenes = {'VEHICLE': 'car', 'PEDESTRIAN': 'pedestrian', 'CYCLIST': 'bicycle'}
 
 
 def get_nuscenes_name(name, dataset):
@@ -17,7 +18,7 @@ def get_nuscenes_name(name, dataset):
     if dataset == 'kitti':
         return kitti_to_nuscenes[name]
     elif dataset == 'waymo':
-        raise ValueError('waymo is not supported yet')
+        return waymo_to_nuscenes[name]
     elif dataset == 'nuscenes':
         return name
     else:
@@ -27,7 +28,7 @@ def get_nuscenes_name(name, dataset):
 class GlobalConfig:
     """Store all hyper parameters of track-with-confidence """
     inf = 1e5  # a very big number to simulate infinity
-    dataset = 'nuscenes'  # 'kitti'
+    dataset = 'waymo'  # 'kitti'
 
     '''
     Kalman Filter Parameters
@@ -57,6 +58,7 @@ class GlobalConfig:
             'trailer': 0.,
             'truck': 0.1
         }
+
     elif dataset == 'kitti':
         tracklet_num_previous_sizes = 15  # for State.__update_size
         tracklet_confidence_threshold = 0.45  # to determine a tracklet is high or low confident
@@ -64,5 +66,19 @@ class GlobalConfig:
         # tuning
         tracklet_tuning_log_likelihood_threshold = -6.5  # (best: -6.5)
         tracklet_tuning_global_assoc_termination_constance = 0.6  # (best: 0.5)
+
+    elif dataset == 'waymo':
+        tracklet_num_previous_sizes = 15  # for State.__update_size
+        tracklet_confidence_threshold = 0.45  # to determine a tracklet is high or low confident
+        tracklet_beta = 5.35  # for computing tracklet confidence (best: 5.35)
+        # tuning
+        tracklet_tuning_log_likelihood_threshold = -6.5  # (best: -6.5)
+        tracklet_tuning_global_assoc_termination_constance = 0.6  # (best: 0.5)
+        tracklet_report_conf_threshold = {
+            'VEHICLE': 0.1,
+            'PEDESTRIAN': 0.1,
+            'CYCLIST': 0.1
+        }
+        nbr_terminals = 2
     else:
         raise ValueError("{} is not supported".format(dataset))
