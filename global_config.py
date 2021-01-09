@@ -68,12 +68,12 @@ class GlobalConfig:
         tracklet_tuning_global_assoc_termination_constance = 0.6  # (best: 0.5)
 
     elif dataset == 'waymo':
-        tracklet_num_previous_sizes = 15  # for State.__update_size
+        tracklet_num_previous_sizes = 5  # for State.__update_size
         tracklet_confidence_threshold = 0.45  # to determine a tracklet is high or low confident
         tracklet_beta = 5.35  # for computing tracklet confidence (best: 5.35)
         # tuning
-        tracklet_tuning_log_likelihood_threshold = -4.5  # (best: -6.5)
-        tracklet_tuning_global_assoc_termination_constance = 0.3  # (best: 0.5)
+        tracklet_tuning_log_likelihood_threshold = -2.5
+        tracklet_tuning_global_assoc_termination_constance = 1.0
         tracklet_report_conf_threshold = {
             'VEHICLE': 0.1,
             'PEDESTRIAN': 0.1,
