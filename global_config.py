@@ -72,13 +72,13 @@ class GlobalConfig:
         tracklet_confidence_threshold = 0.45  # to determine a tracklet is high or low confident
         tracklet_beta = 5.35  # for computing tracklet confidence (best: 5.35)
         # tuning
-        tracklet_tuning_log_likelihood_threshold = -2.5
+        tracklet_tuning_log_likelihood_threshold = -1.5
         tracklet_tuning_global_assoc_termination_constance = 1.0
         tracklet_report_conf_threshold = {
-            'VEHICLE': 0.1,
-            'PEDESTRIAN': 0.1,
-            'CYCLIST': 0.1
+            'VEHICLE': 0.,
+            'PEDESTRIAN': 0.,
+            'CYCLIST': 0.0
         }
-        nbr_terminals = 3
+        nbr_terminals = 4
     else:
         raise ValueError("{} is not supported".format(dataset))
