@@ -13,7 +13,7 @@ dataset = GlobalConfig.dataset
 
 class Measurement(object):
     """For bounding boxes (Bbox3D) interface with tracking functionality"""
-    def __init__(self, position, yaw, size, timestamp, obj_type, det_score, kitti_alpha=None):
+    def __init__(self, position, yaw, size, timestamp, obj_type, det_score, kitti_alpha=None, **kwargs):
         """
         Args:
              position (np.ndarray): position of box's center in global frame, shape (3, )
@@ -37,6 +37,8 @@ class Measurement(object):
         self.kitti_alpha = None
         if kitti_alpha is not None:
             self.kitti_alpha = kitti_alpha
+        # image features
+        self.color_hist = kwargs['color_hist'] if 'color_hist' in kwargs.keys() else None
 
     def __repr__(self):
         return 'Measurement| position: [{:.3f}, {:.3f}, {:.3f}],  yaw: {:.3f}, size: [{:.3f}, {:.3f}, {:.3f}],  ' \
@@ -58,6 +60,6 @@ def cvt_bbox3d_to_measurement(box):
     assert box.score is not None, 'box must have detection score'
     if dataset == 'kitti':
         return Measurement(box.center, box.yaw, np.array([box.l, box.w, box.h]), box.stamp, box.obj_type, box.score,
-                           kitti_alpha=box.cam_obs_angle)
+                           kitti_alpha=box.cam_obs_angle, color_hist=box.color_hist)
     else:
         return Measurement(box.center, box.yaw, np.array([box.l, box.w, box.h]), box.stamp, box.obj_type, box.score)

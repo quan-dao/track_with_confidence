@@ -1,5 +1,5 @@
 import numpy as np
-from copy import deepcopy
+import cv2
 
 from utils.geometry import roty, rotz
 from global_config import GlobalConfig
@@ -7,11 +7,14 @@ from global_config import GlobalConfig
 
 # global constants (their value are set in global_config.py)
 dataset = GlobalConfig.dataset
+num_bins_hue = GlobalConfig.num_color_hist_bins_hue
+num_bins_sat = GlobalConfig.num_color_hist_bins_sat
+patch_target_size = GlobalConfig.patch_target_size
 
 
 class Bbox2D(object):
     """An axis-aligned bounding box on image"""
-    def __init__(self, x_min, y_min, x_max, y_max, object_type):
+    def __init__(self, x_min, y_min, x_max, y_max, object_type, im_width, im_height):
         """
         Args:
              x_min (float): x-pixel-coordinate of top left corner
@@ -19,12 +22,14 @@ class Bbox2D(object):
              x_max (float): x-pixel-coordinate of bottom right corner
              y_max (float): y-pixel-coordinate of bottom right corner
              object_type (str): type of this box
+             im_width (int): image width
+             im_height (int): image height
         """
         self.obj_type = object_type
-        self.x_min = x_min
-        self.y_min = y_min
-        self.x_max = x_max
-        self.y_max = y_max
+        self.x_min = max(0.0, min(x_min, im_width))
+        self.y_min = max(0.0, min(y_min, im_height))
+        self.x_max = max(0.0, min(x_max, im_width))
+        self.y_max = max(0.0, min(y_max, im_height))
 
     def corners(self):
         """ Compute box's corners
@@ -39,22 +44,19 @@ class Bbox2D(object):
             [self.x_min, self.y_max]
         ])
 
-    def clamp(self, img_width, img_height):
-        """Clamp box's size with image size
+    def build_color_histogram(self, im):
+        """Build a Hue-Sat color histogram for an Axis-aligned bounding box
 
         Args:
-            img_width (int): image width
-            img_height (int): image height
-
+            im (np.ndarray): image in HSV color space, shape (height, width, 3)
         Returns:
-            Bbox2D: a new box with size clamped by image size
+            np.ndarray: color histogram
         """
-        clamped_box = deepcopy(self)
-        clamped_box.x_min = max(0.0, min(self.x_min, img_width))
-        clamped_box.x_max = max(0.0, min(self.x_max, img_width))
-        clamped_box.y_min = max(0.0, min(self.y_min, img_height))
-        clamped_box.y_max = max(0.0, min(self.y_max, img_height))
-        return clamped_box
+        assert len(im.shape) == 3, 'input image must have 3 channel and in HSV color space'
+        patch = cv2.resize(im[int(self.y_min): int(self.y_max), int(self.x_min): int(self.x_max), :], patch_target_size)
+        hist = cv2.calcHist([patch], [0, 1], None, [num_bins_hue, num_bins_sat], [0, 180, 0, 256], accumulate=False)
+        cv2.normalize(hist, hist, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX)
+        return hist
 
 
 class Bbox3D(object):
@@ -94,6 +96,8 @@ class Bbox3D(object):
             self.score = kwargs['score']
         if 'id' in kwargs.keys():
             self.id = kwargs['id']
+        # image features
+        self.color_hist = None
 
     def __repr__(self):
         re = 'Bbox3D| center:[{:.3f}, {:.3f}, {:.3f}],  size:[{:.3f}, {:.3f}, {:.3f}],  yaw:{:.3f}'.format(
@@ -167,3 +171,16 @@ class Bbox3D(object):
         # normalize
         proj_corners = proj_corners / proj_corners[2, :]
         return proj_corners[:2, :].T
+
+    def extract_img_feat_(self, im, projection):
+        """Extract image features for a Bbox3D
+        Args:
+            im (np.ndarray): image in HSV color space, shape (height, width, 3)
+            projection (np.ndarray): projection of the box's corners on image, shape (8, 2)
+        Return:
+            np.ndarray: H-S color histogram (normalized)
+        """
+        x_min, y_min = np.amin(projection, axis=0).tolist()
+        x_max, y_max = np.amax(projection, axis=0).tolist()
+        box2d = Bbox2D(x_min, y_min, x_max, y_max, self.obj_type, im.shape[1], im.shape[0])
+        self.color_hist = box2d.build_color_histogram(im)

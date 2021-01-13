@@ -28,7 +28,7 @@ def get_nuscenes_name(name, dataset):
 class GlobalConfig:
     """Store all hyper parameters of track-with-confidence """
     inf = 1e5  # a very big number to simulate infinity
-    dataset = 'waymo'  # 'kitti'
+    dataset = 'kitti'  # 'kitti'
 
     '''
     Kalman Filter Parameters
@@ -66,6 +66,10 @@ class GlobalConfig:
         # tuning
         tracklet_tuning_log_likelihood_threshold = -6.5  # (best: -6.5)
         tracklet_tuning_global_assoc_termination_constance = 0.6  # (best: 0.5)
+        # appearance feature
+        num_color_hist_bins_hue = 50
+        num_color_hist_bins_sat = 60
+        patch_target_size = (75, 45)  # (width, height)
 
     elif dataset == 'waymo':
         tracklet_num_previous_sizes = 5  # for State.__update_size

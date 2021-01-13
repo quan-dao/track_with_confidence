@@ -61,6 +61,13 @@ for frame_idx, name in enumerate(img_names):
     if frame_idx in detection.keys():
         boxes_3d = [kitti_obj_to_bbox3d(o, timestamp=frame_idx, obj_type='Car') for o in detection[frame_idx]]
 
+    # extract image features
+    for i, box in enumerate(boxes_3d):
+        box_to_cam = get_box_to_cam_trans(box)
+        proj = box.project_on_image(box_to_cam, calib.cam_proj_mat)
+        box.extract_img_feat_(img, proj)
+        # draw_bbox3d(img, proj, i)
+
     # map boxes from current camera frame to first camera frame
     for box in boxes_3d:
         box.transform_(ci_to_c0, 'c0')
