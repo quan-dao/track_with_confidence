@@ -35,14 +35,14 @@ def format_detection(frame_idx, d):
     return re
 
 
-nusc = NuScenes(dataroot='/home/user/dataset/nuscenes/v1.0-trainval', version='v1.0-trainval', verbose=True)
+nusc = NuScenes(dataroot='/home/user/dataset/nuscenes/v1.0-test', version='v1.0-test', verbose=True)
 
-detection_file = '/home/user/dataset/nuscenes/nusc-detection/detection-megvii/megvii_val.json'
+detection_file = '/home/user/dataset/nuscenes/nusc-detection/detection-megvii/megvii_test.json'
 with open(detection_file, 'r') as f:
     detections = json.load(f)
 print(detections['meta'])
 
-unpack_dir = '../../data/nuscenes/megvii_detection'
+unpack_dir = '../../data/nuscenes/megvii_detection_test'
 
 processed_samples = set()
 for sample_token in tqdm(detections['results'].keys()):

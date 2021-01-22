@@ -37,13 +37,14 @@ def format_result(sample_token, box):
     }
     """
     assert box.id is not None and box.score is not None and box.obj_type is not None
+    assert box.v_xy is not None, 'box does not have velocity'
     rotation = Quaternion(axis=[0, 0, 1], angle=box.yaw).elements
     sample_result = {
         'sample_token': sample_token,
         'translation': box.center.tolist(),
         'size': [box.w, box.l, box.h],
         'rotation': [rotation[0], rotation[1], rotation[2], rotation[3]],
-        'velocity': [0, 0],
+        'velocity': box.v_xy,
         'tracking_id': box.id,
         'tracking_name': box.obj_type,
         'tracking_score': box.score
@@ -66,13 +67,13 @@ if __name__ == '__main__':
     else:
         raise ValueError("{} already exists. Choose a different datetime or datasplit".format(results_dir))
 
-    detection_dir = './data/nuscenes/megvii_detection'
+    detection_dir = './data/nuscenes/megvii_detection_test'
     val_scene_tokens = [name[:-4] for name in os.listdir(detection_dir) if name.endswith('.txt')]
 
     # initialize tracking results
     tracking_results = {}  # {sample_token: List[sample_result]}
 
-    nusc = NuScenes(dataroot='/home/user/dataset/nuscenes/v1.0-trainval', version='v1.0-trainval', verbose=True)
+    nusc = NuScenes(dataroot='/home/user/dataset/nuscenes/v1.0-test', version='v1.0-test', verbose=True)
     for sidx, scene_token in enumerate(val_scene_tokens):
         print('\n---------------------------------------------')
         print('Generate tracking results for scene {}/{}'.format(sidx, len(val_scene_tokens)))

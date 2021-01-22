@@ -82,6 +82,7 @@ class Bbox3D(object):
         self.score = None  # detection score
         self.id = None  # tracking id
         self.is_on_camera = None  # camera on which this box is visible, applicable for NuScenes and Waymo
+        self.v_xy = None  # velocity along x- & y-axis, for NuScenes
         if 'frame' in kwargs.keys():
             self.frame = kwargs['frame']
         if 'obj_type' in kwargs.keys():

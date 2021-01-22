@@ -2,11 +2,27 @@ import numpy as np
 from copy import deepcopy
 import cv2
 from pyquaternion import Quaternion
+from matplotlib.axes import Axes
 
 from nuscenes.nuscenes import NuScenes
 from utils.data_classes import Bbox3D
 from utils.geometry import rotz
 from .drawing_functions import draw_bbox3d
+
+
+nuscenes_annotation_to_tracking = {
+    'vehicle.bicycle':	'bicycle',
+    'vehicle.bus.bendy':	'bus',
+    'vehicle.bus.rigid':	'bus',
+    'vehicle.car':	'car',
+    'vehicle.motorcycle':	'motorcycle',
+    'human.pedestrian.adult':	'pedestrian',
+    'human.pedestrian.child':	'pedestrian',
+    'human.pedestrian.construction_worker':	'pedestrian',
+    'human.pedestrian.police_officer':	'pedestrian',
+    'vehicle.trailer':	'trailer',
+    'vehicle.truck':	'truck'
+}
 
 
 class NuCamera:
@@ -104,4 +120,46 @@ def draw_bbox3d_on_image(box, camera_infos, label=None):
         cam = camera_infos[box.is_on_camera]
         proj = box.project_on_image(get_box_to_world(box), cam.proj_matrix)
         draw_bbox3d(cam.im, proj, label)
+
+
+def draw_bbox3d_bev(box, color, axis, linewidth=2):
+    """Draw a Bbox3D in BEV
+
+    Args:
+        box (Bbox3D): 3D bounding box
+        color (Tuple): Valid Matplotlib colors (<str> or normalized RGB tuple)
+        axis (Axes): Axis onto which the box should be drawn
+        linewidth (float): width in pixel of the box sides
+    """
+
+    def draw_rect(selected_corners, color_):
+        prev = selected_corners[-1]
+        for corner in selected_corners:
+            axis.plot([prev[0], corner[0]], [prev[1], corner[1]], color=color_, linewidth=linewidth)
+            prev = corner
+
+    corners = np.ones((4, 8))
+    corners[:3, :] = box.corners()
+    corners = get_box_to_world(box) @ corners  # map corners from box' frrame to world frame
+    corners = corners[:2, :].T  # take x & y to draw in BEV, and transpose
+    # draw top face
+    draw_rect(corners[[0, 1, 5, 4]], color)
+
+
+def gt_to_box(annotation):
+    """Convert NuScenes annotations to Bbox3D
+
+    Args:
+        annotation (dict): NuScenes annotation
+    Returns:
+        Bbox3D:
+    """
+    q = Quaternion(annotation['rotation'])
+    yaw = q.angle if q.axis[2] > 0 else -q.angle
+    box = Bbox3D(annotation['translation'][0], annotation['translation'][1], annotation['translation'][2],
+                 annotation['size'][1], annotation['size'][0], annotation['size'][2], yaw)
+    box.frame = 'world'
+    box.id = annotation['instance_token']
+    box.obj_type = nuscenes_annotation_to_tracking[annotation['category_name']]
+    return box
 

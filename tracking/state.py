@@ -11,6 +11,7 @@ from utils.data_classes import Bbox3D
 
 # global constants (their value are set in global_config.py)
 yaw_idx = GlobalConfig.yaw_index
+dataset = GlobalConfig.dataset
 
 
 class State(object):
@@ -24,6 +25,19 @@ class State(object):
         self._kf = KalmanFilter(meas.z, meas.obj_type)
         self.size = meas.size  # [3] (length, width, height)
         self.stamp = meas.stamp
+
+    @property
+    def velocity_xy(self):
+        """ Get x-y velocity
+        Returns:
+             list: [vx, vy]
+        """
+        if self._kf.model == 'cv':
+            return [self._kf.x[4, 0], self._kf.x[5, 0]]
+        else:
+            vx = self._kf.x[4, 0] * np.cos(self._kf.x[yaw_idx, 0])
+            vy = self._kf.x[4, 0] * np.sin(self._kf.x[yaw_idx, 0])
+            return [vx, vy]
 
     @property
     def velocity(self) -> np.ndarray:
@@ -168,5 +182,7 @@ def cvt_state_to_bbox3d(state, box_id=None, score=None, alpha=None, frame=None, 
         box.frame = frame
     if obj_type is not None:
         box.obj_type = obj_type
+    if dataset == 'nuscenes':
+        box.v_xy = state.velocity_xy
     return box
 
