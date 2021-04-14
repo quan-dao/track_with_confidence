@@ -38,10 +38,13 @@ def format_result(frame_idx, track_id, obj_type, box_3d, projection_2d):
            + bbox + dimensions + location + '{} '.format(rotation_y) + '{}\n'.format(score)
 
 
-assert GlobalConfig.dataset == 'kitti'
+assert GlobalConfig.dataset == 'kitti', \
+    "Change GlobalConfig.dataset (from {}) to 'kitti'".format(GlobalConfig.dataset)
+kitti_root = GlobalConfig.kitti_tracking_root
+
 # prepare data directories
-oxts_root = '/home/user/Downloads/kitti/tracking/data_tracking_oxts/training/oxts/'
-calib_root = '/home/user/Downloads/kitti/tracking/data_tracking_calib/training/calib'
+oxts_root = os.path.join(kitti_root, 'data_tracking_oxts', 'training', 'oxts')
+calib_root = calib_file = os.path.join(kitti_root, 'data_tracking_calib', 'training', 'calib')
 detection_root = './data/kitti/pointrcnn_detection'
 result_root = './results/kitti'
 
@@ -51,6 +54,10 @@ seq_names.sort()
 
 
 if __name__ == '__main__':
+    if len(sys.argv) != 4:
+        print("Usage: $python generate_kitti_re.py t_sha obj_type data_split\n"
+              "\t t_sha is an arbitrary string to format the result name")
+        exit(0)
     # python generate_kitti_re.py t_sha obj_type data_split
     t_sha = sys.argv[1]
     obj_type = sys.argv[2]

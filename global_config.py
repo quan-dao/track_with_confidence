@@ -28,7 +28,13 @@ def get_nuscenes_name(name, dataset):
 class GlobalConfig:
     """Store all hyper parameters of track-with-confidence """
     inf = 1e5  # a very big number to simulate infinity
-    dataset = 'waymo'  # 'kitti'
+    dataset = 'kitti'  # 'kitti'
+
+    '''
+    Dataset Path
+    '''
+    kitti_tracking_root = '/home/user/dataset/kitti/tracking'
+
 
     '''
     Kalman Filter Parameters
