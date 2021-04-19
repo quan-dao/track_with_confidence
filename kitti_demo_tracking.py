@@ -22,7 +22,7 @@ assert GlobalConfig.dataset == 'kitti', \
 kitti_root = GlobalConfig.kitti_tracking_root
 
 
-def main(seq_name, tracked_obj_class):
+def main(seq_name, tracked_obj_class, create_video=True):
     print("Demo tracking {} on sequence {}. Press 'q' to stop".format(tracked_obj_class, seq_name))
 
     # get OXTS data
@@ -33,6 +33,11 @@ def main(seq_name, tracked_obj_class):
     img_dir = os.path.join(kitti_root, 'data_tracking_image_2', 'training', 'image_02', seq_name)
     img_names = [file for file in os.listdir(img_dir) if file.endswith('png')]
     img_names.sort()
+
+    if create_video:
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        img = cv2.imread(os.path.join(img_dir, img_names[0]))
+        video = cv2.VideoWriter('video.avi', fourcc, 1, (img.shape[1], img.shape[0]))
 
     # get sensor calib
     calib_file = os.path.join(kitti_root, 'data_tracking_calib', 'training', 'calib', '{}.txt'.format(seq_name))
@@ -91,10 +96,15 @@ def main(seq_name, tracked_obj_class):
                 draw_bbox3d(img, proj, tracklet.id)
 
         cv2.imshow('left_color', img)
+        if create_video:
+            video.write(img)
+
         if cv2.waitKey(100) & 0xFF == ord('q'):
             break
 
     cv2.destroyAllWindows()
+    if create_video:
+        video.release()
 
 
 if __name__ == '__main__':
