@@ -13,6 +13,11 @@ from tracking.state import cvt_state_to_bbox3d
 from global_config import nuscenes_tracking_names, GlobalConfig
 
 
+assert GlobalConfig.dataset == 'nuscenes', \
+    "Change GlobalConfig.dataset (from {}) to 'nuscenes'".format(GlobalConfig.dataset)
+nuscenes_root_trainval = GlobalConfig.nuscenes_root_trainval
+
+
 def format_result(sample_token, box):
     """
 
@@ -55,7 +60,8 @@ if __name__ == '__main__':
     report_conf_thresh = GlobalConfig.nuscenes_tracklet_report_conf_threshold
     # Usage: python nuscenes_generate_tracking_results data_split datetime_str
     if len(sys.argv) != 3:
-        print("Usage: python nuscenes_generate_tracking_results data_split datetime_str")
+        print("Usage: python nuscenes_generate_tracking_results data_split datetime_str\n"
+              "\trefer to nuscenes_run.sh for example")
         exit(1)
     data_split = sys.argv[1]
     datetime = sys.argv[2]
@@ -68,11 +74,14 @@ if __name__ == '__main__':
 
     detection_dir = './data/nuscenes/megvii_detection'
     val_scene_tokens = [name[:-4] for name in os.listdir(detection_dir) if name.endswith('.txt')]
+    if len(val_scene_tokens) < 2:
+        print("Execute script nuscenes_detection_extractor.py in utils/font_end before running tracking in NuScenes")
+        exit(0)
 
     # initialize tracking results
     tracking_results = {}  # {sample_token: List[sample_result]}
 
-    nusc = NuScenes(dataroot='/home/user/dataset/nuscenes/v1.0-trainval', version='v1.0-trainval', verbose=True)
+    nusc = NuScenes(dataroot=nuscenes_root_trainval, version='v1.0-trainval', verbose=True)
     for sidx, scene_token in enumerate(val_scene_tokens):
         print('\n---------------------------------------------')
         print('Generate tracking results for scene {}/{}'.format(sidx, len(val_scene_tokens)))

@@ -2,11 +2,13 @@
 # in plain text file (.txt) in kitti-format
 import os
 import json
+import sys
+
 from tqdm import tqdm
 from pyquaternion import Quaternion
 
 from nuscenes.nuscenes import NuScenes
-from global_config import nuscenes_tracking_names
+from global_config import nuscenes_tracking_names, GlobalConfig
 
 
 def format_detection(frame_idx, d):
@@ -35,42 +37,53 @@ def format_detection(frame_idx, d):
     return re
 
 
-nusc = NuScenes(dataroot='/home/user/dataset/nuscenes/v1.0-trainval', version='v1.0-trainval', verbose=True)
+def nuscenes_extract_detection(detection_file, unpack_dir):
+    print("Generating detection as txt files from {}".format(detection_file))
+    nusc = NuScenes(dataroot=GlobalConfig.nuscenes_root_trainval, version='v1.0-trainval', verbose=True)
 
-detection_file = '/home/user/dataset/nuscenes/nusc-detection/detection-megvii/megvii_val.json'
-with open(detection_file, 'r') as f:
-    detections = json.load(f)
-print(detections['meta'])
+    with open(detection_file, 'r') as f:
+        detections = json.load(f)
+    print(detections['meta'])
 
-unpack_dir = '../../data/nuscenes/megvii_detection'
+    processed_samples = set()
+    for sample_token in tqdm(detections['results'].keys()):
+        if sample_token in processed_samples:
+            continue
 
-processed_samples = set()
-for sample_token in tqdm(detections['results'].keys()):
-    if sample_token in processed_samples:
-        continue
+        sample = nusc.get('sample', sample_token)
+        scene = nusc.get('scene', sample['scene_token'])
+        scene_detections_file = open(os.path.join(unpack_dir, '{}.txt'.format(sample['scene_token'])), 'w')
 
-    sample = nusc.get('sample', sample_token)
-    scene = nusc.get('scene', sample['scene_token'])
-    scene_detections_file = open(os.path.join(unpack_dir, '{}.txt'.format(sample['scene_token'])), 'w')
+        # main loop for processing a scene
+        scene_sample_token = scene['first_sample_token']
+        scene_timestamp = 0
+        while scene_sample_token != '':
+            # get detections of this sample
+            sample_dets = detections['results'][scene_sample_token]  # list(sample_results)
+            for det in sample_dets:
+                if det['detection_name'] in nuscenes_tracking_names:
+                    scene_detections_file.write(format_detection(scene_timestamp, det))
 
-    # main loop for processing a scene
-    scene_sample_token = scene['first_sample_token']
-    scene_timestamp = 0
-    while scene_sample_token != '':
-        # get detections of this sample
-        sample_dets = detections['results'][scene_sample_token]  # list(sample_results)
-        for det in sample_dets:
-            if det['detection_name'] in nuscenes_tracking_names:
-                scene_detections_file.write(format_detection(scene_timestamp, det))
+            # save this sample token into processes_samples
+            processed_samples.add(scene_sample_token)
 
-        # save this sample token into processes_samples
-        processed_samples.add(scene_sample_token)
-
-        # move on
-        scene_sample = nusc.get('sample', scene_sample_token)
-        scene_timestamp += 1
-        scene_sample_token = scene_sample['next']
-    # finish for this scene
-    scene_detections_file.close()
+            # move on
+            scene_sample = nusc.get('sample', scene_sample_token)
+            scene_timestamp += 1
+            scene_sample_token = scene_sample['next']
+        # finish for this scene
+        scene_detections_file.close()
 
 
+if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        print("Usage: $python nuscenes_detection_extractor.py detection_file\n"
+              "\tdetetcion_file (str): full path to detetction file")
+        exit(0)
+    detection_file = sys.argv[1]
+    # detection_file = '/home/user/dataset/nuscenes/nusc-detection/detection-megvii/megvii_val.json'
+
+    full_path = os.path.realpath(__file__)
+    full_path = full_path.split('/')
+    save_extracted_det = os.path.join(*full_path[:-3], 'data', 'nuscenes', 'megvii_detection')
+    nuscenes_extract_detection(detection_file, save_extracted_det)

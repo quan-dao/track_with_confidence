@@ -28,12 +28,15 @@ def get_nuscenes_name(name, dataset):
 class GlobalConfig:
     """Store all hyper parameters of track-with-confidence """
     inf = 1e5  # a very big number to simulate infinity
-    dataset = 'kitti'  # 'kitti'
+    dataset = 'nuscenes'
 
     '''
     Dataset Path
     '''
     kitti_tracking_root = '/home/user/dataset/kitti/tracking'
+    nuscenes_root_mini = '/home/user/dataset/nuscenes/v1.0-mini'
+    nuscenes_root_trainval = '/home/user/dataset/nuscenes/v1.0-trainval'
+    nuscenes_unpack_detection_dir = './data/nuscenes/megvii_detection'
 
 
     '''
