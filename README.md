@@ -1,5 +1,5 @@
 [//]: # (Image References)
-[algo-pipeline]: ./images/two-stage-data-assocpipeline.png]
+[algo-pipeline]: ./images/two-stage-data-assocpipeline.png
 [demo-kitti]: ./images/ezgif.com-gif-maker.gif
 [quali-nuscenes-car]: ./images/fixed_nusc_qualitative_scene_5_CAR.png
 [quan-perf]: ./images/mot-quan-perf.png
